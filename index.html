@@ -943,7 +943,7 @@
        1) API restriction: Google Drive API only
        2) Website restriction: your portal's URL (e.g. https://<user>.github.io/*)
      A key restricted that way can only read link-shared files and only from this site. */
-  const DRIVE_DEFAULT_KEY = '';
+  const DRIVE_DEFAULT_KEY = 'AIzaSyD5yydxk_JNJcppwY8hseJagqj8n8ktSzg';
   function driveCfg() {
     try { return Object.assign({ apiKey: '', folderId: DRIVE_DEFAULT_FOLDER, seen: {} }, JSON.parse(localStorage.getItem(DRIVE_KEY)) || {}); }
     catch (e) { return { apiKey: '', folderId: DRIVE_DEFAULT_FOLDER, seen: {} }; }
