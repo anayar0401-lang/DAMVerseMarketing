@@ -273,14 +273,13 @@
       <datalist id="camp-list"></datalist>
       <button class="btn" id="camp-go">Open →</button>
     </div>
-    <p class="hint" style="margin-top:8px" id="open-hint">Existing names autofill as you type. New campaigns appear automatically when their CSV lands in the Drive folder and you click Fetch.</p>
+    <p class="hint" style="margin-top:8px" id="open-hint">Existing names autofill as you type. New campaigns appear automatically after a Refresh.</p>
 
-    <h2 class="section">Google Drive sync</h2>
-    <div class="drive-row">
-      <button class="btn" id="drive-fetch">⟳ Fetch data from Drive</button>
-      <button class="btn ghost small" id="drive-setup">⚙ Configure</button>
+    <div class="drive-row" style="margin-top:22px">
+      <button class="btn" id="drive-fetch">⟳ Refresh Data</button>
+      <button class="btn ghost small" id="drive-setup">⚙</button>
     </div>
-    <p class="hint" id="drive-status">Reads every CSV in your Drive folder and updates matching campaigns — campaign names are read from inside each file, so you can replace one file or drop in many.</p>
+    <p class="hint" id="drive-status">Pulls the latest campaign numbers. New campaigns appear automatically.</p>
 
     <h2 class="section" id="existing-h" style="display:none">Campaigns</h2>
     <div class="campaign-grid" id="camp-grid"></div>
@@ -590,10 +589,10 @@
     if (!name) return;
     if (db.campaigns[name] && db.campaigns[name].rows.length) {
       $('camp-input').value = '';
-      $('open-hint').textContent = 'Existing names autofill as you type. New campaigns appear automatically when their CSV lands in the Drive folder and you click Fetch.';
+      $('open-hint').textContent = 'Existing names autofill as you type. New campaigns appear automatically after a Refresh.';
       go('#/c/' + encodeURIComponent(name));
     } else {
-      $('open-hint').textContent = `No campaign called “${name}” yet — add its LinkedIn CSV to the Drive folder and click “⟳ Fetch data from Drive” below.`;
+      $('open-hint').textContent = `No campaign called “${name}” yet — click “⟳ Refresh Data” below to pull the latest campaigns.`;
     }
   }
 
@@ -943,7 +942,7 @@
     }
 
     try {
-      driveStatus('Checking Drive folder…', 'busy');
+      driveStatus('Checking for new data…', 'busy');
       const q = encodeURIComponent(`'${cfg.folderId}' in parents and trashed=false`);
       const listURL = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,mimeType,modifiedTime)&pageSize=100&key=${apiKey}`;
       const res = await fetch(listURL);
@@ -954,17 +953,22 @@
         throw new Error('Drive list failed: ' + detail);
       }
       const files = (await res.json()).files || [];
-      const csvs = files.filter(f => /\.(csv|tsv|txt)$/i.test(f.name) || /csv|tab-separated/i.test(f.mimeType || ''));
+      const isSheet = f => f.mimeType === 'application/vnd.google-apps.spreadsheet';
+      const csvs = files.filter(f => isSheet(f) || /\.(csv|tsv|txt)$/i.test(f.name) || /csv|tab-separated/i.test(f.mimeType || ''));
       if (!csvs.length) { driveStatus('Folder reachable, but no CSV files found in it.', 'bad'); return; }
 
       const fresh = csvs.filter(f => cfg.seen[f.id] !== f.modifiedTime);
-      if (!fresh.length) { driveStatus(`Up to date — all ${csvs.length} file(s) already imported. Replace or add a file in Drive, then fetch again.`, 'good'); return; }
+      if (!fresh.length) { driveStatus('Everything is up to date.', 'good'); return; }
 
       const imported = [], failed = [];
       for (const f of fresh) {
         driveStatus(`Importing ${f.name}…`, 'busy');
         try {
-          const fr = await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${apiKey}`);
+          // Google Sheets (e.g. filled by Zapier) are exported as CSV; plain files download directly.
+          const dlURL = isSheet(f)
+            ? `https://www.googleapis.com/drive/v3/files/${f.id}/export?mimeType=text%2Fcsv&key=${apiKey}`
+            : `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${apiKey}`;
+          const fr = await fetch(dlURL);
           if (!fr.ok) throw new Error('download failed (HTTP ' + fr.status + ')');
           const text = decodeBytes(await fr.arrayBuffer());
           const updated = ingestCSVText(f.name.replace(/\.[^.]+$/, ''), text);
