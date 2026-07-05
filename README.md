@@ -8,9 +8,10 @@ management-ready performance report. Everything lives in `index.html` — no bui
 1. **Landing page** — type a campaign name (existing names autofill) or click an existing
    campaign card. A cross-campaign snapshot table compares spend, CTR, CPC, leads, and CPL
    when you have more than one campaign.
-2. **Upload screen** — drop in the latest CSV exported from LinkedIn Campaign Manager
-   (Analyze → Export → CSV, **daily time breakdown** recommended). Re-uploading is safe:
-   rows for the same dates are overwritten, new dates are appended.
+2. **Google Drive sync** — all data comes in via the **⟳ Fetch data from Drive** button,
+   which reads the LinkedIn CSVs in the configured Drive folder (details below). Export with
+   a **daily time breakdown** (Analyze → Export → CSV) so the trend chart has data.
+   Re-fetching is safe: rows for the same dates are overwritten, new dates are appended.
 3. **Report** — KPI cards, conversion funnel, auto-generated "what management should know"
    insights (benchmarked against LinkedIn B2B norms), and a date-wise trend chart with a
    metric selector (impressions / clicks / CTR / spend / leads / CPL).
@@ -72,11 +73,13 @@ next milestone is crossed. Thresholds live in one place in `index.html`
 
 ## Daily workflow
 
-1. In LinkedIn Campaign Manager, export the campaign's CSV (daily breakdown, full date range).
-2. Open the portal → click the campaign → **Upload new CSV** → drop the file.
-3. Share the URL with management; they click a campaign card to see the report.
+1. Get the LinkedIn CSV (daily breakdown, full date range) into the Drive folder — manually,
+   or automatically via Zapier delivering LinkedIn's scheduled report emails.
+2. Open the portal → **⟳ Fetch data from Drive**. Every campaign found in the files updates.
+3. Share the URL with management; they click Fetch, then a campaign card, to see reports.
 
-`sample-data/sample-linkedin-export.csv` is a realistic example export you can use to demo the portal.
+`sample-data/sample-linkedin-export.csv` is a realistic example export — drop it in the Drive
+folder to demo the portal.
 
 ## CSV compatibility
 
