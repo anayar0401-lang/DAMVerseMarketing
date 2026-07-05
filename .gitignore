@@ -2,3 +2,10 @@
 .claude/
 *.csv
 !sample-data/*.csv
+automation/.profile/
+automation/downloads/
+automation/token.json
+automation/credentials.json
+automation/debug.png
+automation/fetch.log
+__pycache__/

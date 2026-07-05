@@ -81,6 +81,38 @@ next milestone is crossed. Thresholds live in one place in `index.html`
 `sample-data/sample-linkedin-export.csv` is a realistic example export — drop it in the Drive
 folder to demo the portal.
 
+## Automated fetch (experimental) — `automation/`
+
+`automation/fetch_linkedin_report.py` downloads the performance CSV from LinkedIn
+Campaign Manager using your own logged-in browser session and drops it in the Drive
+folder, replacing the manual export entirely.
+
+> ⚠ LinkedIn's User Agreement prohibits automated access, even to your own account.
+> Use once daily at most, and apply for LinkedIn Marketing API access as the proper
+> long-term solution. Session cookies, tokens and downloads are gitignored — never
+> commit them.
+
+Setup:
+
+```bash
+cd automation
+pip3 install -r requirements.txt
+python3 -m playwright install chromium
+python3 fetch_linkedin_report.py --login     # log in manually once, close window
+python3 fetch_linkedin_report.py --headed    # watch the first fetch work
+```
+
+For Drive upload (`--drive`): in the portal's Google Cloud project, create an OAuth
+client (type: Desktop app), download it as `automation/credentials.json`, and approve
+the consent screen on first run. Alternative: skip `--drive` and pass
+`--out "<path to a Google Drive for desktop synced folder>"`.
+
+Schedule daily at 06:30: `crontab -e` →
+`30 6 * * * cd <repo>/automation && python3 fetch_linkedin_report.py --drive >> fetch.log 2>&1`
+
+If LinkedIn changes its UI, the script saves `debug.png` showing where it got stuck —
+share that screenshot with Claude to get the selectors updated.
+
 ## CSV compatibility
 
 The parser handles LinkedIn's export quirks: preamble rows before the header, comma/tab/semicolon
