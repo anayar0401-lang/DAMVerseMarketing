@@ -1,0 +1,31 @@
+ad Performance Report (in UTC)
+"Report Start: July 1, 2026, 12:00 AM"
+"Report End: July 5, 2026, 11:59 PM"
+"Date Generated: July 5, 2026, 6:00 AM"
+
+Start Date (in UTC)	Account Name	Currency	Campaign Name	Ad Set Objective	Ad Name	Total Spent	Impressions	Clicks	Click Through Rate	Average CPC	Conversions	Clicks to Landing Page	Leads	Lead Forms Opened
+7/1/2026	DAMVerse	USD	DAMVerse Demo Gen	Lead generation	Ad_DemoGen_1	9.60	1800	12	0.67%	0.80	1	10	1	8
+7/2/2026	DAMVerse	USD	DAMVerse Demo Gen	Lead generation	Ad_DemoGen_1	11.90	2100	15	0.71%	0.79	2	13	2	10
+7/3/2026	DAMVerse	USD	DAMVerse Demo Gen	Lead generation	Ad_DemoGen_1	10.40	1950	13	0.67%	0.80	1	11	1	9
+7/4/2026	DAMVerse	USD	DAMVerse Demo Gen	Lead generation	Ad_DemoGen_1	13.20	2300	17	0.74%	0.78	2	15	2	11
+7/5/2026	DAMVerse	USD	DAMVerse Demo Gen	Lead generation	Ad_DemoGen_1	11.10	2050	14	0.68%	0.79	1	12	1	9
+7/1/2026	DAMVerse	USD	DAMVerse Brand Awareness	Brand awareness	Ad_Brand_1	19.60	7800	28	0.36%	0.70	0	24	0	0
+7/2/2026	DAMVerse	USD	DAMVerse Brand Awareness	Brand awareness	Ad_Brand_1	20.50	8200	31	0.38%	0.66	0	27	0	0
+7/3/2026	DAMVerse	USD	DAMVerse Brand Awareness	Brand awareness	Ad_Brand_1	19.90	7900	29	0.37%	0.69	0	25	0	0
+7/4/2026	DAMVerse	USD	DAMVerse Brand Awareness	Brand awareness	Ad_Brand_1	21.30	8500	33	0.39%	0.65	0	28	0	0
+7/5/2026	DAMVerse	USD	DAMVerse Brand Awareness	Brand awareness	Ad_Brand_1	20.20	8100	30	0.37%	0.67	0	26	0	0
+7/1/2026	DAMVerse	USD	DAMVerse Enterprise ABM	Lead generation	Ad_ABM_A	11.20	950	7	0.74%	1.60	0	5	0	1
+7/1/2026	DAMVerse	USD	DAMVerse Enterprise ABM	Lead generation	Ad_ABM_B	10.60	870	5	0.57%	2.12	0	4	0	1
+7/2/2026	DAMVerse	USD	DAMVerse Enterprise ABM	Lead generation	Ad_ABM_A	10.80	880	6	0.68%	1.80	1	4	1	1
+7/2/2026	DAMVerse	USD	DAMVerse Enterprise ABM	Lead generation	Ad_ABM_B	11.30	910	6	0.66%	1.88	0	5	0	2
+7/3/2026	DAMVerse	USD	DAMVerse Enterprise ABM	Lead generation	Ad_ABM_A	11.10	920	6	0.65%	1.85	0	4	0	2
+7/3/2026	DAMVerse	USD	DAMVerse Enterprise ABM	Lead generation	Ad_ABM_B	10.90	890	6	0.67%	1.82	1	5	1	1
+7/4/2026	DAMVerse	USD	DAMVerse Enterprise ABM	Lead generation	Ad_ABM_A	11.40	900	7	0.78%	1.63	0	5	0	1
+7/4/2026	DAMVerse	USD	DAMVerse Enterprise ABM	Lead generation	Ad_ABM_B	11.60	930	7	0.75%	1.66	0	6	0	1
+7/5/2026	DAMVerse	USD	DAMVerse Enterprise ABM	Lead generation	Ad_ABM_A	11.00	940	6	0.64%	1.83	0	5	0	1
+7/5/2026	DAMVerse	USD	DAMVerse Enterprise ABM	Lead generation	Ad_ABM_B	11.20	900	6	0.67%	1.87	0	4	0	1
+7/1/2026	DAMVerse	USD	DAMVerse Retargeting	Lead generation	Ad_Retarget_1	6.30	1150	9	0.78%	0.70	0	0	0	7
+7/2/2026	DAMVerse	USD	DAMVerse Retargeting	Lead generation	Ad_Retarget_1	7.70	1250	11	0.88%	0.70	0	0	0	9
+7/3/2026	DAMVerse	USD	DAMVerse Retargeting	Lead generation	Ad_Retarget_1	7.00	1180	10	0.85%	0.70	0	0	1	8
+7/4/2026	DAMVerse	USD	DAMVerse Retargeting	Lead generation	Ad_Retarget_1	8.40	1300	12	0.92%	0.70	0	0	0	9
+7/5/2026	DAMVerse	USD	DAMVerse Retargeting	Lead generation	Ad_Retarget_1	7.10	1220	10	0.82%	0.70	0	0	0	7
