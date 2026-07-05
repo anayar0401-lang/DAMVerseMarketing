@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DAMVerse — LinkedIn Ad Performance Portal</title>
+<style>
+  :root {
+    --navy: #191937;
+    --navy-2: #232350;
+    --indigo: #4b3af0;
+    --indigo-soft: #7a6cf5;
+    --indigo-pale: #b3aaf8;
+    --lav: #dcd8f7;
+    --card: #f2f1fa;
+    --card-border: #e3e1f2;
+    --ink: #1c1c2e;
+    --muted: #6b6b85;
+    --green: #189a5a;
+    --amber: #cc8400;
+    --red: #c43a2e;
+    --radius: 14px;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #fbfbfe;
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    background: var(--navy);
+    color: #fff;
+    padding: 22px 36px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .logo {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: var(--indigo);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 800;
+    flex-shrink: 0;
+  }
+  .topbar h1 { font-size: 1.45rem; font-weight: 700; letter-spacing: .2px; }
+  .topbar .sub { color: #b9b7d8; font-size: .85rem; margin-top: 3px; }
+  .topbar .spacer { flex: 1; }
+  .topbar .spend { text-align: right; }
+  .topbar .spend .amt { color: var(--indigo-pale); font-size: 1.6rem; font-weight: 800; }
+  .topbar .spend .lbl { color: #b9b7d8; font-size: .78rem; }
+
+  main { max-width: 1180px; margin: 0 auto; padding: 30px 28px 60px; }
+
+  /* ---------- Buttons & inputs ---------- */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--indigo); color: #fff;
+    border: none; border-radius: 10px;
+    padding: 11px 20px; font-size: .95rem; font-weight: 600;
+    cursor: pointer;
+  }
+  .btn:hover { background: #3c2cd6; }
+  .btn.ghost {
+    background: #fff; color: var(--indigo);
+    border: 1.5px solid var(--indigo-pale);
+  }
+  .btn.ghost:hover { background: var(--card); }
+  .btn.small { padding: 7px 14px; font-size: .85rem; }
+  input[type=text] {
+    padding: 12px 16px; font-size: 1rem;
+    border: 1.5px solid var(--card-border); border-radius: 10px;
+    width: 100%; background: #fff; color: var(--ink);
+  }
+  input[type=text]:focus { outline: 2px solid var(--indigo-soft); border-color: transparent; }
+  select {
+    padding: 8px 12px; font-size: .9rem; border-radius: 8px;
+    border: 1.5px solid var(--card-border); background: #fff; color: var(--ink);
+  }
+
+  h2.section { font-size: 1.15rem; font-weight: 700; margin: 26px 0 14px; }
+  .hint { color: var(--muted); font-size: .85rem; }
+
+  /* ---------- Home ---------- */
+  .add-row { display: flex; gap: 12px; max-width: 640px; }
+  .campaign-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px; margin-top: 6px;
+  }
+  .camp-card {
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: var(--radius); padding: 18px 20px;
+    cursor: pointer; position: relative;
+    transition: transform .08s ease, box-shadow .08s ease;
+  }
+  .camp-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(75,58,240,.12); }
+  .camp-card .name { font-weight: 700; font-size: 1.02rem; padding-right: 26px; }
+  .camp-card .meta { color: var(--muted); font-size: .78rem; margin-top: 4px; }
+  .camp-card .mini {
+    display: flex; gap: 18px; margin-top: 12px;
+    font-size: .82rem; color: var(--muted);
+  }
+  .camp-card .mini b { display: block; color: var(--ink); font-size: 1.05rem; }
+  .camp-card .del {
+    position: absolute; top: 10px; right: 10px;
+    background: none; border: none; color: var(--muted);
+    font-size: 1rem; cursor: pointer; padding: 4px; border-radius: 6px;
+  }
+  .camp-card .del:hover { color: var(--red); background: #fff; }
+
+  table.compare {
+    width: 100%; border-collapse: collapse; margin-top: 6px;
+    background: #fff; border: 1px solid var(--card-border); border-radius: var(--radius);
+    overflow: hidden; font-size: .9rem;
+  }
+  table.compare th, table.compare td { padding: 11px 14px; text-align: right; }
+  table.compare th:first-child, table.compare td:first-child { text-align: left; }
+  table.compare thead { background: var(--card); color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .4px; }
+  table.compare tbody tr { border-top: 1px solid var(--card-border); cursor: pointer; }
+  table.compare tbody tr:hover { background: #f7f6fd; }
+
+  /* ---------- Upload ---------- */
+  .dropzone {
+    border: 2.5px dashed var(--indigo-pale); border-radius: var(--radius);
+    background: var(--card); padding: 60px 30px; text-align: center;
+    cursor: pointer; margin-top: 10px;
+  }
+  .dropzone.drag { background: var(--lav); border-color: var(--indigo); }
+  .dropzone .big { font-size: 1.1rem; font-weight: 600; margin-bottom: 6px; }
+  .err {
+    background: #fdeceb; color: var(--red); border: 1px solid #f5c9c5;
+    border-radius: 10px; padding: 12px 16px; margin-top: 14px; font-size: .9rem; display: none;
+  }
+
+  /* ---------- Report: KPI cards ---------- */
+  .kpis {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px; margin-top: 4px;
+  }
+  .kpi {
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: var(--radius); padding: 22px 12px; text-align: center;
+    box-shadow: 0 2px 6px rgba(25,25,55,.05);
+  }
+  .kpi .val { font-size: 1.85rem; font-weight: 800; }
+  .kpi .lbl { color: var(--muted); font-size: .85rem; margin-top: 6px; }
+  .kpi.green .val { color: var(--green); }
+  .kpi.amber .val { color: var(--amber); }
+
+  .report-cols { display: grid; grid-template-columns: 1fr 1.15fr; gap: 40px; margin-top: 30px; }
+  @media (max-width: 900px) { .report-cols { grid-template-columns: 1fr; } }
+
+  /* ---------- Funnel ---------- */
+  .funnel-row { display: grid; grid-template-columns: 150px 1fr 130px; align-items: center; margin-bottom: 4px; }
+  .funnel-row .flabel { font-weight: 700; font-size: .95rem; text-align: right; padding-right: 16px; }
+  .funnel-bar-wrap { display: flex; justify-content: center; }
+  .funnel-bar {
+    color: #fff; font-weight: 700; text-align: center;
+    padding: 14px 0; font-size: 1.05rem; border-radius: 3px;
+  }
+  .funnel-conn-wrap { display: flex; justify-content: center; }
+  .funnel-conn { background: var(--lav); height: 26px; }
+  .funnel-note { color: var(--indigo); font-size: .82rem; font-style: italic; font-weight: 600; }
+  .funnel-foot { color: var(--muted); font-size: .78rem; font-style: italic; margin-top: 14px; }
+
+  /* ---------- Insights ---------- */
+  .insight {
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px;
+    display: flex; gap: 14px;
+  }
+  .insight .dot { width: 16px; height: 16px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; }
+  .insight .t { font-weight: 700; margin-bottom: 4px; }
+  .insight .d { color: var(--muted); font-size: .87rem; line-height: 1.45; }
+  .reco { font-size: .88rem; margin-top: 4px; }
+  .reco b { font-weight: 800; }
+
+  /* ---------- Trend ---------- */
+  .trend-head { display: flex; align-items: center; gap: 14px; margin: 34px 0 10px; }
+  .trend-card {
+    background: #fff; border: 1px solid var(--card-border);
+    border-radius: var(--radius); padding: 18px; box-shadow: 0 2px 6px rgba(25,25,55,.05);
+  }
+  .report-toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 22px; }
+  footer { text-align: center; color: var(--muted); font-size: .78rem; padding: 20px; }
+  .view { display: none; }
+  .view.active { display: block; }
+  #compare-wrap { overflow-x: auto; }
+  #compare-wrap table.compare { min-width: 560px; }
+
+  /* ---------- Alerts bell ---------- */
+  .bell-wrap { position: relative; }
+  .bell-btn {
+    background: none; border: none; cursor: pointer; color: #fff;
+    font-size: 1.35rem; padding: 8px; position: relative; line-height: 1;
+  }
+  .bell-badge {
+    position: absolute; top: 2px; right: 0;
+    background: var(--red); color: #fff;
+    font-size: .62rem; font-weight: 700;
+    border-radius: 9px; padding: 1px 5px; min-width: 16px; text-align: center;
+  }
+  .alert-panel {
+    position: absolute; right: 0; top: 46px; width: 340px;
+    background: #fff; color: var(--ink);
+    border: 1px solid var(--card-border); border-radius: 12px;
+    box-shadow: 0 14px 34px rgba(25,25,55,.2);
+    z-index: 60; display: none; max-height: 70vh; overflow: auto;
+  }
+  .alert-panel.open { display: block; }
+  .alert-panel .ap-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px; border-bottom: 1px solid var(--card-border);
+    font-weight: 700; font-size: .9rem;
+  }
+  .alert-panel .ap-head button { background: none; border: none; color: var(--indigo); font-size: .78rem; cursor: pointer; font-weight: 600; }
+  .alert-item { padding: 12px 14px; border-bottom: 1px solid var(--card-border); display: flex; gap: 10px; font-size: .84rem; }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-item .adot { width: 12px; height: 12px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; }
+  .alert-item .at { font-weight: 700; margin-bottom: 2px; }
+  .alert-item .ab { color: var(--muted); line-height: 1.4; }
+  .alert-item .ack { background: none; border: none; color: var(--muted); cursor: pointer; font-size: .95rem; margin-left: auto; align-self: flex-start; padding: 2px 4px; }
+  .alert-item .ack:hover { color: var(--green); }
+  .alert-empty { padding: 22px; text-align: center; color: var(--muted); font-size: .85rem; }
+
+  /* ---------- Drive sync ---------- */
+  .drive-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  #drive-status { margin-top: 8px; }
+  #drive-status.busy { color: var(--indigo); }
+  #drive-status.bad { color: var(--red); }
+  #drive-status.good { color: var(--green); }
+
+  /* ---------- Mobile ---------- */
+  @media (max-width: 640px) {
+    .topbar { padding: 14px 16px; gap: 12px; }
+    .topbar h1 { font-size: 1rem; }
+    .topbar .sub { font-size: .72rem; }
+    .topbar .spend .amt { font-size: 1.15rem; }
+    .logo { width: 36px; height: 36px; font-size: 19px; border-radius: 8px; }
+    main { padding: 20px 14px 48px; }
+    .add-row { flex-direction: column; }
+    .btn { justify-content: center; }
+    .kpis { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .kpi { padding: 16px 8px; }
+    .kpi .val { font-size: 1.35rem; }
+    .funnel-row { grid-template-columns: 88px 1fr minmax(0, auto); }
+    .funnel-row .flabel { font-size: .76rem; padding-right: 8px; }
+    .funnel-bar { font-size: .88rem; padding: 10px 0; }
+    .funnel-note { font-size: .7rem; max-width: 92px; }
+    .funnel-conn { height: 18px; }
+    .report-cols { gap: 20px; margin-top: 20px; }
+    .dropzone { padding: 40px 16px; }
+    .trend-head { flex-wrap: wrap; gap: 10px; }
+    .alert-panel { position: fixed; left: 12px; right: 12px; top: 64px; width: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">D</div>
+  <div>
+    <h1 id="tb-title">DAMVerse — LinkedIn Ad Performance</h1>
+    <div class="sub" id="tb-sub">Campaign reporting portal</div>
+  </div>
+  <div class="spacer"></div>
+  <div class="bell-wrap">
+    <button class="bell-btn" id="bell" title="Alerts" aria-label="Alerts">🔔<span class="bell-badge" id="bell-badge" style="display:none">0</span></button>
+    <div class="alert-panel" id="alert-panel"></div>
+  </div>
+  <div class="spend" id="tb-spend" style="display:none">
+    <div class="amt" id="tb-spend-amt">$0.00</div>
+    <div class="lbl">total spend</div>
+  </div>
+</header>
+
+<main>
+  <!-- ============ HOME ============ -->
+  <section class="view" id="view-home">
+    <h2 class="section">Add or open a campaign</h2>
+    <div class="add-row">
+      <input type="text" id="camp-input" list="camp-list" placeholder="Type a campaign name — existing names autofill" autocomplete="off">
+      <datalist id="camp-list"></datalist>
+      <button class="btn" id="camp-go">Open →</button>
+    </div>
+    <p class="hint" style="margin-top:8px">New name → you'll be asked to upload its LinkedIn CSV. Existing name → straight to its report.</p>
+
+    <h2 class="section">Google Drive sync</h2>
+    <div class="drive-row">
+      <button class="btn" id="drive-fetch">⟳ Fetch data from Drive</button>
+      <button class="btn ghost small" id="drive-setup">⚙ Configure</button>
+    </div>
+    <p class="hint" id="drive-status">Reads every CSV in your Drive folder and updates matching campaigns — campaign names are read from inside each file, so you can replace one file or drop in many.</p>
+
+    <h2 class="section" id="existing-h" style="display:none">Campaigns</h2>
+    <div class="campaign-grid" id="camp-grid"></div>
+
+    <h2 class="section" id="compare-h" style="display:none">Cross-campaign snapshot</h2>
+    <div id="compare-wrap"></div>
+
+    <div style="margin-top:34px; display:flex; gap:10px;">
+      <button class="btn ghost small" id="export-all">⬇ Export all data (JSON backup)</button>
+      <button class="btn ghost small" id="import-all">⬆ Import data</button>
+      <input type="file" id="import-file" accept=".json" style="display:none">
+    </div>
+    <p class="hint" style="margin-top:8px">Data lives in this browser (localStorage). Use export/import to move it to another machine or share with management.</p>
+  </section>
+
+  <!-- ============ UPLOAD ============ -->
+  <section class="view" id="view-upload">
+    <button class="btn ghost small" id="upload-back">← All campaigns</button>
+    <h2 class="section" id="upload-title">Upload CSV</h2>
+    <p class="hint">Export from LinkedIn Campaign Manager: <b>Analyze → Export → CSV</b>, with a <b>daily</b> breakdown if possible (that powers the trend chart). Re-uploading overwrites rows for the same dates, so overlapping exports are safe.</p>
+    <div class="dropzone" id="dropzone">
+      <div class="big">Drop the LinkedIn CSV here</div>
+      <div class="hint">or click to choose a file (.csv, .xls exports saved as CSV, tab- or comma-separated)</div>
+    </div>
+    <input type="file" id="csv-file" accept=".csv,.tsv,.txt,.xls" style="display:none">
+    <div class="err" id="upload-err"></div>
+  </section>
+
+  <!-- ============ REPORT ============ -->
+  <section class="view" id="view-report">
+    <div class="report-toolbar">
+      <button class="btn ghost small" id="report-back">← All campaigns</button>
+      <button class="btn small" id="report-upload">⬆ Upload new CSV</button>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="report-cols">
+      <div>
+        <h2 class="section">Conversion funnel</h2>
+        <div id="funnel"></div>
+        <div class="funnel-foot">Bar widths illustrative; labels show actual counts.</div>
+      </div>
+      <div>
+        <h2 class="section">What management should know</h2>
+        <div id="insights"></div>
+        <p class="reco" id="reco"></p>
+      </div>
+    </div>
+
+    <div class="trend-head">
+      <h2 class="section" style="margin:0">Performance over time</h2>
+      <select id="trend-metric">
+        <option value="impressions">Impressions</option>
+        <option value="clicks">Clicks</option>
+        <option value="ctr">CTR %</option>
+        <option value="spend">Spend</option>
+        <option value="leads">Leads</option>
+        <option value="cpl">Cost per lead</option>
+      </select>
+    </div>
+    <div class="trend-card" id="trend-card"></div>
+  </section>
+</main>
+
+<footer>DAMVerse ad reporting portal · static single-file app · data stored locally in your browser</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ================= Storage ================= */
+  const KEY = 'damverse_campaigns_v1';
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || { campaigns: {} }; }
+    catch (e) { return { campaigns: {} }; }
+  }
+  function save(db) { localStorage.setItem(KEY, JSON.stringify(db)); }
+
+  let db = load();
+
+  /* ================= CSV parsing ================= */
+
+  // Decode file bytes, handling UTF-16 exports LinkedIn sometimes produces.
+  function decodeBytes(buf) {
+    const b = new Uint8Array(buf);
+    if (b.length >= 2 && b[0] === 0xFF && b[1] === 0xFE) return new TextDecoder('utf-16le').decode(buf);
+    if (b.length >= 2 && b[0] === 0xFE && b[1] === 0xFF) return new TextDecoder('utf-16be').decode(buf);
+    return new TextDecoder('utf-8').decode(buf);
+  }
+
+  // RFC-4180-ish parser with delimiter autodetection (comma vs tab vs semicolon).
+  function parseDelimited(text) {
+    text = text.replace(/^﻿/, '');
+    const sample = text.split(/\r?\n/).slice(0, 20).join('\n');
+    const counts = { '\t': (sample.match(/\t/g) || []).length,
+                     ',':  (sample.match(/,/g)  || []).length,
+                     ';':  (sample.match(/;/g)  || []).length };
+    const delim = Object.keys(counts).sort((a, z) => counts[z] - counts[a])[0];
+
+    const rows = []; let row = [], cell = '', inQ = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQ) {
+        if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else inQ = false; }
+        else cell += c;
+      } else if (c === '"') inQ = true;
+      else if (c === delim) { row.push(cell); cell = ''; }
+      else if (c === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+      else if (c !== '\r') cell += c;
+    }
+    if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+    return rows.filter(r => r.some(c => c.trim() !== ''));
+  }
+
+  const norm = s => String(s || '').toLowerCase().replace(/\(.*?\)/g, '').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+
+  // Column synonyms across LinkedIn export variants. Order matters (exact match wins first).
+  const COLMAP = {
+    date:        { exact: ['date', 'start date', 'day'], fuzzy: ['start date'] },
+    impressions: { exact: ['impressions'], fuzzy: [] },
+    clicks:      { exact: ['clicks'], fuzzy: ['clicks chargeable'] },
+    spend:       { exact: ['total spent', 'amount spent', 'spend', 'cost'], fuzzy: ['total spent'] },
+    leads:       { exact: ['leads'], fuzzy: [] },
+    formOpens:   { exact: ['lead form opens', 'lead forms opened', 'opened lead forms'], fuzzy: ['lead form open'] },
+    conversions: { exact: ['conversions', 'external website conversions'], fuzzy: ['website conversions'] },
+    lpClicks:    { exact: ['landing page clicks', 'clicks to landing page'], fuzzy: ['landing page click'] }
+  };
+
+  function mapColumns(headerCells) {
+    const H = headerCells.map(norm), out = {};
+    for (const key of Object.keys(COLMAP)) {
+      let idx = H.findIndex(h => COLMAP[key].exact.includes(h));
+      if (idx === -1) idx = H.findIndex(h => COLMAP[key].fuzzy.some(f => h.includes(f)));
+      if (idx !== -1) out[key] = idx;
+    }
+    return out;
+  }
+
+  function toNum(s) {
+    const v = parseFloat(String(s || '').replace(/[^0-9.\-]/g, ''));
+    return isNaN(v) ? 0 : v;
+  }
+
+  function toISODate(s) {
+    s = String(s || '').trim();
+    if (!s) return null;
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+    const mdy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+    if (mdy) {
+      let [, m, d, y] = mdy;
+      if (y.length === 2) y = '20' + y;
+      return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    }
+    const t = Date.parse(s);
+    if (!isNaN(t)) {
+      const dt = new Date(t);
+      return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+    }
+    return null;
+  }
+
+  // Returns { rows: [...daily rows...], totalsRow: {...}|null } or throws with a friendly message.
+  function parseLinkedInCSV(text) {
+    const grid = parseDelimited(text);
+    const hIdx = grid.findIndex(r => r.map(norm).includes('impressions'));
+    if (hIdx === -1) throw new Error('Could not find a header row containing "Impressions". Make sure this is a LinkedIn Campaign Manager performance export.');
+    const cols = mapColumns(grid[hIdx]);
+    if (cols.impressions === undefined) throw new Error('No Impressions column found.');
+
+    // Metadata columns present in creative/campaign performance exports.
+    const H = grid[hIdx].map(norm);
+    const metaIdx = {
+      campaignName: H.indexOf('campaign name'),
+      currency: H.indexOf('currency'),
+      objective: H.indexOf('ad set objective')
+    };
+    const meta = { campaignName: null, currency: null, objective: null };
+
+    const rows = []; let totalsRow = null;
+    for (let i = hIdx + 1; i < grid.length; i++) {
+      const r = grid[i];
+      for (const k in metaIdx) {
+        if (!meta[k] && metaIdx[k] !== -1 && r[metaIdx[k]]) meta[k] = String(r[metaIdx[k]]).trim();
+      }
+      const rec = {
+        date: cols.date !== undefined ? toISODate(r[cols.date]) : null,
+        impressions: toNum(r[cols.impressions]),
+        clicks: cols.clicks !== undefined ? toNum(r[cols.clicks]) : 0,
+        spend: cols.spend !== undefined ? toNum(r[cols.spend]) : 0,
+        leads: cols.leads !== undefined ? toNum(r[cols.leads]) : 0,
+        formOpens: cols.formOpens !== undefined ? toNum(r[cols.formOpens]) : 0,
+        conversions: cols.conversions !== undefined ? toNum(r[cols.conversions]) : 0,
+        lpClicks: cols.lpClicks !== undefined ? toNum(r[cols.lpClicks]) : 0
+      };
+      const hasData = rec.impressions || rec.clicks || rec.spend || rec.leads;
+      if (rec.date && hasData) rows.push(rec);
+      else if (!rec.date && hasData && /total/i.test(r.join(' '))) totalsRow = rec;
+      else if (!rec.date && hasData && !totalsRow) totalsRow = rec; // summary export with no date column
+    }
+    if (!rows.length && !totalsRow) throw new Error('Found the header but no data rows with numbers in them.');
+    return { rows, totalsRow, meta, hasFormOpens: cols.formOpens !== undefined, hasDaily: rows.length > 0 };
+  }
+
+  // Creative-level exports have one row per ad per date — collapse to one row per date.
+  function sumByDate(rows) {
+    const agg = {};
+    rows.forEach(r => {
+      if (!agg[r.date]) agg[r.date] = { ...r };
+      else for (const k in r) { if (k !== 'date') agg[r.date][k] += (r[k] || 0); }
+    });
+    return Object.values(agg);
+  }
+
+  /* ================= Metrics ================= */
+
+  function totals(rows) {
+    const t = { impressions: 0, clicks: 0, spend: 0, leads: 0, formOpens: 0, conversions: 0, lpClicks: 0 };
+    rows.forEach(r => { for (const k in t) t[k] += (r[k] || 0); });
+    t.ctr = t.impressions ? t.clicks / t.impressions * 100 : 0;
+    t.cpc = t.clicks ? t.spend / t.clicks : 0;
+    t.cpm = t.impressions ? t.spend / t.impressions * 1000 : 0;
+    t.cpl = t.leads ? t.spend / t.leads : 0;
+    t.completion = t.formOpens ? t.leads / t.formOpens * 100 : null;
+    t.openRate = t.clicks ? t.formOpens / t.clicks * 100 : null;
+    return t;
+  }
+
+  const fmtInt = n => Math.round(n).toLocaleString('en-US');
+  const CUR_SYMBOLS = { USD: '$', INR: '₹', EUR: '€', GBP: '£', AUD: 'A$', CAD: 'C$', SGD: 'S$', AED: 'AED ' };
+  let activeSym = '$'; // set per campaign before rendering money
+  const curSym = code => CUR_SYMBOLS[code] || (code ? code + ' ' : '$');
+  const fmtMoney = (n, sym) => (sym || activeSym) + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtPct = n => n.toLocaleString('en-US', { maximumFractionDigits: 2 }) + '%';
+  function fmtDateShort(iso) {
+    const [y, m, d] = iso.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  /* ================= Views / routing ================= */
+
+  const $ = id => document.getElementById(id);
+  const views = { home: $('view-home'), upload: $('view-upload'), report: $('view-report') };
+  let currentCampaign = null;
+
+  function show(name) {
+    Object.values(views).forEach(v => v.classList.remove('active'));
+    views[name].classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function go(hash) { location.hash = hash; }
+
+  function route() {
+    const h = decodeURIComponent(location.hash || '');
+    const mR = h.match(/^#\/c\/(.+)$/), mU = h.match(/^#\/u\/(.+)$/);
+    if (mR && db.campaigns[mR[1]]) { currentCampaign = mR[1]; renderReport(); show('report'); }
+    else if (mU) { currentCampaign = mU[1]; renderUpload(); show('upload'); }
+    else { renderHome(); show('home'); }
+    refreshBell();
+  }
+  window.addEventListener('hashchange', route);
+
+  function setTopbar(sub, spend) {
+    $('tb-sub').textContent = sub;
+    if (spend != null) { $('tb-spend').style.display = ''; $('tb-spend-amt').textContent = fmtMoney(spend); }
+    else $('tb-spend').style.display = 'none';
+  }
+
+  /* ================= Home ================= */
+
+  function campaignNames() {
+    return Object.keys(db.campaigns).sort((a, z) =>
+      (db.campaigns[z].updatedAt || '').localeCompare(db.campaigns[a].updatedAt || ''));
+  }
+
+  function renderHome() {
+    setTopbar('Campaign reporting portal', null);
+    $('tb-title').textContent = 'DAMVerse — LinkedIn Ad Performance';
+
+    const names = campaignNames();
+    $('camp-list').innerHTML = names.map(n => `<option value="${escAttr(n)}">`).join('');
+
+    $('existing-h').style.display = names.length ? '' : 'none';
+    $('compare-h').style.display = names.length > 1 ? '' : 'none';
+
+    $('camp-grid').innerHTML = names.map(n => {
+      const c = db.campaigns[n], t = totals(c.rows), s = curSym(c.currency);
+      return `<div class="camp-card" data-name="${escAttr(n)}">
+        <button class="del" title="Delete campaign" data-del="${escAttr(n)}">✕</button>
+        <div class="name">${esc(n)}</div>
+        <div class="meta">${c.rows.length} day${c.rows.length === 1 ? '' : 's'} of data · updated ${c.updatedAt ? new Date(c.updatedAt).toLocaleDateString() : '—'}</div>
+        <div class="mini">
+          <span><b>${fmtMoney(t.spend, s)}</b>spend</span>
+          <span><b>${fmtInt(t.leads)}</b>leads</span>
+          <span><b>${t.leads ? fmtMoney(t.cpl, s) : '—'}</b>CPL</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    if (names.length > 1) {
+      $('compare-wrap').innerHTML = `<table class="compare">
+        <thead><tr><th>Campaign</th><th>Spend</th><th>Impressions</th><th>CTR</th><th>CPC</th><th>Leads</th><th>CPL</th></tr></thead>
+        <tbody>${names.map(n => {
+          const t = totals(db.campaigns[n].rows), s = curSym(db.campaigns[n].currency);
+          return `<tr data-name="${escAttr(n)}"><td>${esc(n)}</td><td>${fmtMoney(t.spend, s)}</td><td>${fmtInt(t.impressions)}</td><td>${fmtPct(t.ctr)}</td><td>${t.clicks ? fmtMoney(t.cpc, s) : '—'}</td><td>${fmtInt(t.leads)}</td><td>${t.leads ? fmtMoney(t.cpl, s) : '—'}</td></tr>`;
+        }).join('')}</tbody></table>`;
+    } else $('compare-wrap').innerHTML = '';
+  }
+
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const escAttr = s => esc(s).replace(/"/g, '&quot;');
+
+  $('camp-go').addEventListener('click', openFromInput);
+  $('camp-input').addEventListener('keydown', e => { if (e.key === 'Enter') openFromInput(); });
+
+  function openFromInput() {
+    const name = $('camp-input').value.trim();
+    if (!name) return;
+    $('camp-input').value = '';
+    if (db.campaigns[name] && db.campaigns[name].rows.length) go('#/c/' + encodeURIComponent(name));
+    else go('#/u/' + encodeURIComponent(name));
+  }
+
+  $('camp-grid').addEventListener('click', e => {
+    const del = e.target.closest('[data-del]');
+    if (del) {
+      const n = del.getAttribute('data-del');
+      if (confirm(`Delete campaign "${n}" and all its data? This cannot be undone.`)) {
+        delete db.campaigns[n]; save(db); renderHome();
+      }
+      return;
+    }
+    const card = e.target.closest('.camp-card');
+    if (card) go('#/c/' + encodeURIComponent(card.getAttribute('data-name')));
+  });
+  $('compare-wrap').addEventListener('click', e => {
+    const tr = e.target.closest('tr[data-name]');
+    if (tr) go('#/c/' + encodeURIComponent(tr.getAttribute('data-name')));
+  });
+
+  /* ---- Export / import ---- */
+  $('export-all').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'damverse-data-' + new Date().toISOString().slice(0, 10) + '.json';
+    a.click(); URL.revokeObjectURL(a.href);
+  });
+  $('import-all').addEventListener('click', () => $('import-file').click());
+  $('import-file').addEventListener('change', e => {
+    const f = e.target.files[0]; if (!f) return;
+    f.text().then(txt => {
+      try {
+        const incoming = JSON.parse(txt);
+        if (!incoming.campaigns) throw new Error('bad file');
+        for (const n in incoming.campaigns) {
+          const inc = incoming.campaigns[n];
+          if (!db.campaigns[n]) db.campaigns[n] = inc;
+          else {
+            const byDate = {};
+            db.campaigns[n].rows.concat(inc.rows).forEach(r => { byDate[r.date] = r; });
+            db.campaigns[n].rows = Object.values(byDate).sort((a, z) => a.date.localeCompare(z.date));
+            db.campaigns[n].updatedAt = new Date().toISOString();
+          }
+        }
+        save(db); renderHome(); refreshBell();
+        alert('Import complete.');
+      } catch (err) { alert('Could not import: not a valid DAMVerse backup file.'); }
+      e.target.value = '';
+    });
+  });
+
+  /* ================= Upload ================= */
+
+  function renderUpload() {
+    setTopbar('Upload latest LinkedIn Campaign Manager export', null);
+    $('tb-title').textContent = currentCampaign;
+    $('upload-title').textContent = `Upload CSV for “${currentCampaign}”`;
+    $('upload-err').style.display = 'none';
+  }
+
+  $('upload-back').addEventListener('click', () => go('#/'));
+  const dz = $('dropzone');
+  dz.addEventListener('click', () => $('csv-file').click());
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('drag');
+    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  });
+  $('csv-file').addEventListener('change', e => {
+    if (e.target.files[0]) handleFile(e.target.files[0]);
+    e.target.value = '';
+  });
+
+  function handleFile(file) {
+    file.arrayBuffer().then(buf => {
+      try { ingestCSVText(currentCampaign, decodeBytes(buf)); go('#/c/' + encodeURIComponent(currentCampaign)); }
+      catch (err) { const el = $('upload-err'); el.textContent = '⚠ ' + err.message; el.style.display = 'block'; }
+    });
+  }
+
+  // Also exposed for testing/automation.
+  function ingestCSVText(name, text) {
+    const parsed = parseLinkedInCSV(text);
+    if (!db.campaigns[name]) db.campaigns[name] = { rows: [], updatedAt: null };
+    const c = db.campaigns[name];
+    if (parsed.meta.currency) c.currency = parsed.meta.currency;
+    if (parsed.meta.campaignName) c.sourceName = parsed.meta.campaignName;
+    if (parsed.meta.objective) c.objective = parsed.meta.objective;
+    if (parsed.hasDaily) {
+      const byDate = {};
+      c.rows.forEach(r => { byDate[r.date] = r; });
+      sumByDate(parsed.rows).forEach(r => { byDate[r.date] = r; });   // newest upload wins per date
+      c.rows = Object.values(byDate).sort((a, z) => a.date.localeCompare(z.date));
+    } else {
+      // Summary-only export: store as a single undated snapshot for today.
+      const today = new Date().toISOString().slice(0, 10);
+      parsed.totalsRow.date = today;
+      c.rows = c.rows.filter(r => r.date !== today).concat(parsed.totalsRow).sort((a, z) => a.date.localeCompare(z.date));
+    }
+    c.updatedAt = new Date().toISOString();
+    save(db);
+  }
+
+  /* ================= Report ================= */
+
+  $('report-back').addEventListener('click', () => go('#/'));
+  $('report-upload').addEventListener('click', () => go('#/u/' + encodeURIComponent(currentCampaign)));
+  $('trend-metric').addEventListener('change', () => renderTrend());
+
+  function renderReport() {
+    const c = db.campaigns[currentCampaign];
+    activeSym = curSym(c.currency);
+    const t = totals(c.rows);
+    const dates = c.rows.map(r => r.date).sort();
+    const range = dates.length
+      ? `${fmtDateShort(dates[0])}–${fmtDateShort(dates[dates.length - 1])}, ${dates[dates.length - 1].slice(0, 4)}`
+      : '';
+
+    $('tb-title').textContent = `${currentCampaign} — LinkedIn Ad Performance`;
+    setTopbar(`${c.objective || 'Campaign'} · ${range} (${c.currency || 'USD'})`, t.spend);
+
+    /* KPI cards */
+    $('kpis').innerHTML = `
+      <div class="kpi"><div class="val">${fmtInt(t.impressions)}</div><div class="lbl">Impressions</div></div>
+      <div class="kpi green"><div class="val">${fmtPct(t.ctr)}</div><div class="lbl">Click-through rate</div></div>
+      <div class="kpi green"><div class="val">${t.clicks ? fmtMoney(t.cpc) : '—'}</div><div class="lbl">Cost per click</div></div>
+      <div class="kpi amber"><div class="val">${fmtInt(t.leads)}</div><div class="lbl">Leads</div></div>
+      <div class="kpi amber"><div class="val">${t.leads ? fmtMoney(t.cpl) : '—'}</div><div class="lbl">Cost per lead</div></div>`;
+
+    renderFunnel(t);
+    renderInsights(t);
+    renderTrend();
+  }
+
+  function renderFunnel(t) {
+    const stages = [
+      { label: 'Impressions', value: t.impressions },
+      { label: 'Clicks', value: t.clicks, note: t.impressions ? fmtPct(t.ctr) + ' CTR' : '' }
+    ];
+    if (t.formOpens) stages.push({ label: 'Lead forms opened', value: t.formOpens, note: t.openRate != null ? Math.round(t.openRate) + '% opened' : '' });
+    stages.push({ label: 'Leads', value: t.leads, note: t.completion != null ? fmtPct(t.completion) + ' completed' : '' });
+
+    const shades = ['#4b3af0', '#5b48f2', '#7a6cf5', '#9b8ef7'];
+    const max = Math.max(...stages.map(s => s.value), 1);
+    let html = '';
+    stages.forEach((s, i) => {
+      const w = Math.max(16, Math.sqrt(s.value / max) * 62); // % width, sqrt scale so small stages stay visible
+      html += `<div class="funnel-row">
+        <div class="flabel">${s.label}</div>
+        <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${w}%;background:${shades[Math.min(i, 3)]}">${fmtInt(s.value)}</div></div>
+        <div></div>
+      </div>`;
+      if (i < stages.length - 1) {
+        const next = stages[i + 1];
+        const nw = Math.max(16, Math.sqrt(next.value / max) * 62);
+        html += `<div class="funnel-row">
+          <div></div>
+          <div class="funnel-conn-wrap"><div class="funnel-conn" style="width:${Math.max(nw * 0.7, 8)}%"></div></div>
+          <div class="funnel-note">${next.note || ''}</div>
+        </div>`;
+      }
+    });
+    $('funnel').innerHTML = html;
+  }
+
+  // LinkedIn B2B rough norms used for the automated read-out.
+  const NORMS = { ctr: 0.44, cpc: 5.0, cpm: 30, completionLow: 12, completionHigh: 15 };
+
+  function renderInsights(t) {
+    const cards = [];
+
+    if (t.clicks && t.cpc < NORMS.cpc) {
+      cards.push({ color: 'var(--green)', title: 'Reach is cheap & efficient',
+        body: `CPC ${fmtMoney(t.cpc)} and CPM ${fmtMoney(t.cpm)} sit well below LinkedIn B2B norms (~$${NORMS.cpc}+ CPC, ~$${NORMS.cpm}+ CPM). Top of funnel is working; CTR is ${t.ctr >= NORMS.ctr ? 'at or above' : 'near'} benchmark.` });
+    } else if (t.clicks) {
+      cards.push({ color: 'var(--amber)', title: 'Reach costs are elevated',
+        body: `CPC ${fmtMoney(t.cpc)} vs the ~$${NORMS.cpc} LinkedIn B2B norm. Consider tightening audience targeting or refreshing the creative to lift CTR (currently ${fmtPct(t.ctr)}).` });
+    }
+
+    if (t.completion != null) {
+      if (t.completion < NORMS.completionLow) {
+        cards.push({ color: 'var(--amber)', title: 'The leak is form completion',
+          body: `Only ${fmtPct(t.completion)} of the ${fmtInt(t.formOpens)} who opened the lead form finished it (norm ${NORMS.completionLow}–${NORMS.completionHigh}%). Highest-leverage fix: shorten the form.` });
+      } else {
+        cards.push({ color: 'var(--green)', title: 'Form completion is healthy',
+          body: `${fmtPct(t.completion)} of the ${fmtInt(t.formOpens)} form opens converted to leads — at or above the ${NORMS.completionLow}–${NORMS.completionHigh}% norm.` });
+      }
+    }
+
+    if (t.clicks > 0 && t.conversions === 0 && t.lpClicks === 0) {
+      cards.push({ color: 'var(--red)', title: 'Conversion tracking looks broken',
+        body: `0 tracked conversions and 0 landing-page clicks despite ${fmtInt(t.clicks)} clicks — likely a pixel issue, not zero demand. Verify before scaling.` });
+    }
+
+    if (!cards.length) cards.push({ color: 'var(--muted)', title: 'Not enough data yet', body: 'Upload a CSV with more activity to generate insights.' });
+
+    $('insights').innerHTML = cards.map(c =>
+      `<div class="insight"><div class="dot" style="background:${c.color}"></div><div><div class="t">${c.title}</div><div class="d">${c.body}</div></div></div>`).join('');
+
+    const recos = [];
+    if (t.completion != null && t.completion < NORMS.completionLow) recos.push('fix lead-form completion');
+    if (t.clicks > 0 && t.conversions === 0 && t.lpClicks === 0) recos.push('verify tracking');
+    if (t.clicks && t.cpc >= NORMS.cpc) recos.push('reduce CPC via targeting/creative');
+    $('reco').innerHTML = recos.length
+      ? `<b>Recommendation:</b> ${recos.join(' + ')} before increasing spend.`
+      : `<b>Recommendation:</b> metrics look healthy — safe to test increased spend.`;
+  }
+
+  /* ---- Trend chart (hand-rolled SVG, no dependencies) ---- */
+  function renderTrend() {
+    const c = db.campaigns[currentCampaign];
+    const metric = $('trend-metric').value;
+    const rows = [...c.rows].sort((a, z) => a.date.localeCompare(z.date));
+
+    const val = r => {
+      switch (metric) {
+        case 'ctr': return r.impressions ? r.clicks / r.impressions * 100 : 0;
+        case 'cpl': return r.leads ? r.spend / r.leads : 0;
+        default: return r[metric] || 0;
+      }
+    };
+    const fmt = v => metric === 'spend' || metric === 'cpl' ? fmtMoney(v) : metric === 'ctr' ? fmtPct(v) : fmtInt(v);
+
+    if (rows.length < 2) {
+      $('trend-card').innerHTML = `<p class="hint" style="padding:20px;text-align:center">Trend needs at least 2 days of data. Upload a CSV exported with a <b>daily breakdown</b> (Campaign Manager → Export → time breakdown: daily).</p>`;
+      return;
+    }
+
+    const W = 940, H = 280, P = { l: 64, r: 20, t: 20, b: 40 };
+    const vals = rows.map(val);
+    const maxV = Math.max(...vals) * 1.15 || 1;
+    const x = i => P.l + i * (W - P.l - P.r) / (rows.length - 1);
+    const y = v => H - P.b - (v / maxV) * (H - P.t - P.b);
+
+    let gridlines = '', yLabels = '';
+    for (let g = 0; g <= 4; g++) {
+      const v = maxV * g / 4, yy = y(v);
+      gridlines += `<line x1="${P.l}" y1="${yy}" x2="${W - P.r}" y2="${yy}" stroke="#ececf6" stroke-width="1"/>`;
+      yLabels += `<text x="${P.l - 10}" y="${yy + 4}" text-anchor="end" font-size="11" fill="#6b6b85">${fmt(v)}</text>`;
+    }
+
+    const pts = rows.map((r, i) => `${x(i)},${y(val(r))}`).join(' ');
+    const area = `${P.l},${H - P.b} ${pts} ${x(rows.length - 1)},${H - P.b}`;
+
+    const dots = rows.map((r, i) =>
+      `<circle cx="${x(i)}" cy="${y(val(r))}" r="4.5" fill="#4b3af0" stroke="#fff" stroke-width="2"><title>${fmtDateShort(r.date)}: ${fmt(val(r))}</title></circle>`).join('');
+
+    const step = Math.ceil(rows.length / 10);
+    const xLabels = rows.map((r, i) => i % step === 0 || i === rows.length - 1
+      ? `<text x="${x(i)}" y="${H - P.b + 20}" text-anchor="middle" font-size="11" fill="#6b6b85">${fmtDateShort(r.date)}</text>` : '').join('');
+
+    $('trend-card').innerHTML =
+      `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${metric} over time">
+        ${gridlines}${yLabels}
+        <polygon points="${area}" fill="#4b3af0" opacity="0.08"/>
+        <polyline points="${pts}" fill="none" stroke="#4b3af0" stroke-width="2.5" stroke-linejoin="round"/>
+        ${dots}${xLabels}
+      </svg>`;
+  }
+
+  /* ================= Alerts ================= */
+
+  const THRESHOLDS = { budgetStep: 100, budgetWarnWithin: 10, cplLimit: 50 };
+  const ACK_KEY = 'damverse_alert_acks_v1';
+  function loadAcks() { try { return JSON.parse(localStorage.getItem(ACK_KEY)) || {}; } catch (e) { return {}; } }
+  let acks = loadAcks();
+  function saveAcks() { localStorage.setItem(ACK_KEY, JSON.stringify(acks)); }
+
+  function computeAlerts() {
+    const out = [];
+    for (const name of Object.keys(db.campaigns)) {
+      const c = db.campaigns[name], t = totals(c.rows), s = curSym(c.currency);
+      const crossed = Math.floor(t.spend / THRESHOLDS.budgetStep);
+      if (crossed >= 1) out.push({
+        id: `${name}|spend-cross-${crossed}`, color: 'var(--amber)',
+        title: `${name}: spend crossed ${fmtMoney(crossed * THRESHOLDS.budgetStep, s)}`,
+        body: `Total spend is now ${fmtMoney(t.spend, s)}.`
+      });
+      const next = (crossed + 1) * THRESHOLDS.budgetStep;
+      if (next - t.spend <= THRESHOLDS.budgetWarnWithin) out.push({
+        id: `${name}|spend-approach-${next}`, color: 'var(--amber)',
+        title: `${name}: spend approaching ${fmtMoney(next, s)}`,
+        body: `Total spend is ${fmtMoney(t.spend, s)} — within ${fmtMoney(next - t.spend, s)} of the next ${fmtMoney(THRESHOLDS.budgetStep, s)} mark.`
+      });
+      if (t.leads > 0 && t.cpl > THRESHOLDS.cplLimit) out.push({
+        id: `${name}|cpl-${Math.floor(t.cpl / THRESHOLDS.cplLimit)}`, color: 'var(--red)',
+        title: `${name}: CPL above ${fmtMoney(THRESHOLDS.cplLimit, s)}`,
+        body: `Cost per lead is ${fmtMoney(t.cpl, s)} (${fmtInt(t.leads)} lead${t.leads === 1 ? '' : 's'} on ${fmtMoney(t.spend, s)} spend). Review targeting or creative before scaling.`
+      });
+    }
+    return out;
+  }
+
+  function refreshBell() {
+    const alerts = computeAlerts().filter(a => !acks[a.id]);
+    const badge = $('bell-badge');
+    badge.style.display = alerts.length ? '' : 'none';
+    badge.textContent = alerts.length;
+
+    $('alert-panel').innerHTML = `<div class="ap-head"><span>Alerts</span>${alerts.length ? '<button id="ack-all">Dismiss all</button>' : ''}</div>` +
+      (alerts.length
+        ? alerts.map(a => `<div class="alert-item"><div class="adot" style="background:${a.color}"></div><div><div class="at">${esc(a.title)}</div><div class="ab">${esc(a.body)}</div></div><button class="ack" title="Dismiss" data-ack="${escAttr(a.id)}">✓</button></div>`).join('')
+        : `<div class="alert-empty">No active alerts.<br>Watching: spend near each $${THRESHOLDS.budgetStep} mark · CPL above $${THRESHOLDS.cplLimit}.</div>`);
+  }
+
+  $('bell').addEventListener('click', e => { e.stopPropagation(); $('alert-panel').classList.toggle('open'); });
+  document.addEventListener('click', e => { if (!e.target.closest('.bell-wrap')) $('alert-panel').classList.remove('open'); });
+  $('alert-panel').addEventListener('click', e => {
+    e.stopPropagation();
+    const b = e.target.closest('[data-ack]');
+    if (b) { acks[b.getAttribute('data-ack')] = Date.now(); saveAcks(); refreshBell(); }
+    if (e.target.id === 'ack-all') { computeAlerts().forEach(a => { acks[a.id] = Date.now(); }); saveAcks(); refreshBell(); }
+  });
+
+  /* ================= Google Drive sync ================= */
+
+  const DRIVE_KEY = 'damverse_drive_v1';
+  const DRIVE_DEFAULT_FOLDER = '1vCBU1cDadEoChmsnN9NtJ6g5f9xWm_D6';
+  function driveCfg() {
+    try { return Object.assign({ apiKey: '', folderId: DRIVE_DEFAULT_FOLDER, seen: {} }, JSON.parse(localStorage.getItem(DRIVE_KEY)) || {}); }
+    catch (e) { return { apiKey: '', folderId: DRIVE_DEFAULT_FOLDER, seen: {} }; }
+  }
+  function saveDrive(cfg) { localStorage.setItem(DRIVE_KEY, JSON.stringify(cfg)); }
+
+  function driveStatus(msg, cls) { const el = $('drive-status'); el.textContent = msg; el.className = 'hint' + (cls ? ' ' + cls : ''); }
+
+  function driveSetup() {
+    const cfg = driveCfg();
+    const key = prompt('Google API key (create one free at console.cloud.google.com — see README for the 2-minute steps). Stored only in this browser:', cfg.apiKey || '');
+    if (key === null) return null;
+    const folder = prompt('Drive folder ID (the part after /folders/ in the folder URL). Folder must be shared as "Anyone with the link — Viewer":', cfg.folderId || DRIVE_DEFAULT_FOLDER);
+    if (folder === null) return null;
+    cfg.apiKey = key.trim(); cfg.folderId = (folder.trim() || DRIVE_DEFAULT_FOLDER).replace(/.*folders\//, '').replace(/[?].*$/, '');
+    saveDrive(cfg);
+    driveStatus('Drive settings saved.', 'good');
+    return cfg;
+  }
+
+  $('drive-setup').addEventListener('click', driveSetup);
+  $('drive-fetch').addEventListener('click', fetchFromDrive);
+
+  async function fetchFromDrive() {
+    let cfg = driveCfg();
+    if (!cfg.apiKey) { cfg = driveSetup(); if (!cfg || !cfg.apiKey) { driveStatus('Fetch needs a Google API key — click ⚙ Configure to add one (README has the steps).', 'bad'); return; } }
+
+    try {
+      driveStatus('Checking Drive folder…', 'busy');
+      const q = encodeURIComponent(`'${cfg.folderId}' in parents and trashed=false`);
+      const listURL = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,mimeType,modifiedTime)&pageSize=100&key=${cfg.apiKey}`;
+      const res = await fetch(listURL);
+      if (!res.ok) {
+        const detail = res.status === 403 ? 'API key invalid/restricted, or Drive API not enabled on the key’s project.'
+                     : res.status === 404 ? 'Folder not found — is it shared as "Anyone with the link — Viewer"?'
+                     : `HTTP ${res.status}.`;
+        throw new Error('Drive list failed: ' + detail);
+      }
+      const files = (await res.json()).files || [];
+      const csvs = files.filter(f => /\.(csv|tsv|txt)$/i.test(f.name) || /csv|tab-separated/i.test(f.mimeType || ''));
+      if (!csvs.length) { driveStatus('Folder reachable, but no CSV files found in it.', 'bad'); return; }
+
+      const fresh = csvs.filter(f => cfg.seen[f.id] !== f.modifiedTime);
+      if (!fresh.length) { driveStatus(`Up to date — all ${csvs.length} file(s) already imported. Replace or add a file in Drive, then fetch again.`, 'good'); return; }
+
+      const imported = [], failed = [];
+      for (const f of fresh) {
+        driveStatus(`Importing ${f.name}…`, 'busy');
+        try {
+          const fr = await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${cfg.apiKey}`);
+          if (!fr.ok) throw new Error('download failed (HTTP ' + fr.status + ')');
+          const text = decodeBytes(await fr.arrayBuffer());
+          const parsed = parseLinkedInCSV(text);
+          const name = (parsed.meta.campaignName || f.name.replace(/\.[^.]+$/, '')).trim();
+          ingestCSVText(name, text);
+          cfg.seen[f.id] = f.modifiedTime;
+          if (!imported.includes(name)) imported.push(name);
+        } catch (err) { failed.push(`${f.name} (${err.message})`); }
+      }
+      saveDrive(cfg);
+      renderHome(); refreshBell();
+      if (imported.length) driveStatus(`Imported ${fresh.length - failed.length} file(s) → ${imported.join(', ')}.` + (failed.length ? ` Skipped: ${failed.join('; ')}` : ''), failed.length ? 'bad' : 'good');
+      else driveStatus('Nothing imported. ' + failed.join('; '), 'bad');
+    } catch (err) {
+      driveStatus('⚠ ' + err.message, 'bad');
+    }
+  }
+
+  /* ================= Boot ================= */
+  window.__damverse = { ingestCSVText, parseLinkedInCSV, load: () => db, _rerender: route }; // debug/automation hooks
+  route();
+})();
+</script>
+</body>
+</html>
