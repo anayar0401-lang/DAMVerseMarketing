@@ -415,6 +415,7 @@
 
   // Column synonyms across LinkedIn export variants. Order matters (exact match wins first).
   const COLMAP = {
+    campaign:    { exact: ['campaign name'], fuzzy: [] },
     date:        { exact: ['date', 'start date', 'day'], fuzzy: ['start date'] },
     impressions: { exact: ['impressions'], fuzzy: [] },
     clicks:      { exact: ['clicks'], fuzzy: ['clicks chargeable'] },
@@ -482,6 +483,7 @@
         if (!meta[k] && metaIdx[k] !== -1 && r[metaIdx[k]]) meta[k] = String(r[metaIdx[k]]).trim();
       }
       const rec = {
+        campaign: cols.campaign !== undefined && r[cols.campaign] ? String(r[cols.campaign]).trim() : null,
         date: cols.date !== undefined ? toISODate(r[cols.date]) : null,
         impressions: toNum(r[cols.impressions]),
         clicks: cols.clicks !== undefined ? toNum(r[cols.clicks]) : 0,
@@ -694,32 +696,53 @@
 
   function handleFile(file) {
     file.arrayBuffer().then(buf => {
-      try { ingestCSVText(currentCampaign, decodeBytes(buf)); go('#/c/' + encodeURIComponent(currentCampaign)); }
+      try {
+        const updated = ingestCSVText(currentCampaign, decodeBytes(buf));
+        // One campaign in the file → straight to its report; several → overview.
+        if (updated.length === 1) go('#/c/' + encodeURIComponent(updated[0]));
+        else { go('#/'); driveStatus(`File contained ${updated.length} campaigns — updated: ${updated.join(', ')}.`, 'good'); }
+      }
       catch (err) { const el = $('upload-err'); el.textContent = '⚠ ' + err.message; el.style.display = 'block'; }
     });
   }
 
-  // Also exposed for testing/automation.
-  function ingestCSVText(name, text) {
+  // Splits rows by the CSV's Campaign Name column, so one file covering several
+  // campaigns updates each of them. Returns the list of campaign names updated.
+  // fallbackName is used only when the file has no campaign column.
+  function ingestCSVText(fallbackName, text) {
     const parsed = parseLinkedInCSV(text);
-    if (!db.campaigns[name]) db.campaigns[name] = { rows: [], updatedAt: null };
-    const c = db.campaigns[name];
-    if (parsed.meta.currency) c.currency = parsed.meta.currency;
-    if (parsed.meta.campaignName) c.sourceName = parsed.meta.campaignName;
-    if (parsed.meta.objective) c.objective = parsed.meta.objective;
+    const stripCampaign = ({ campaign, ...rest }) => rest;
+
+    const groups = {};
     if (parsed.hasDaily) {
-      const byDate = {};
-      c.rows.forEach(r => { byDate[r.date] = r; });
-      sumByDate(parsed.rows).forEach(r => { byDate[r.date] = r; });   // newest upload wins per date
-      c.rows = Object.values(byDate).sort((a, z) => a.date.localeCompare(z.date));
+      parsed.rows.forEach(r => {
+        const g = r.campaign || parsed.meta.campaignName || fallbackName;
+        (groups[g] = groups[g] || []).push(stripCampaign(r));
+      });
     } else {
-      // Summary-only export: store as a single undated snapshot for today.
-      const today = new Date().toISOString().slice(0, 10);
-      parsed.totalsRow.date = today;
-      c.rows = c.rows.filter(r => r.date !== today).concat(parsed.totalsRow).sort((a, z) => a.date.localeCompare(z.date));
+      groups[parsed.meta.campaignName || fallbackName] = null; // summary-only export
     }
-    c.updatedAt = new Date().toISOString();
+
+    for (const name of Object.keys(groups)) {
+      if (!db.campaigns[name]) db.campaigns[name] = { rows: [], updatedAt: null };
+      const c = db.campaigns[name];
+      if (parsed.meta.currency) c.currency = parsed.meta.currency;
+      if (parsed.meta.objective) c.objective = parsed.meta.objective;
+      if (groups[name]) {
+        const byDate = {};
+        c.rows.forEach(r => { byDate[r.date] = r; });
+        sumByDate(groups[name]).forEach(r => { byDate[r.date] = r; });   // newest upload wins per date
+        c.rows = Object.values(byDate).sort((a, z) => a.date.localeCompare(z.date));
+      } else {
+        // Summary-only export: store as a single undated snapshot for today.
+        const today = new Date().toISOString().slice(0, 10);
+        const snap = stripCampaign(parsed.totalsRow); snap.date = today;
+        c.rows = c.rows.filter(r => r.date !== today).concat(snap).sort((a, z) => a.date.localeCompare(z.date));
+      }
+      c.updatedAt = new Date().toISOString();
+    }
     save(db);
+    return Object.keys(groups);
   }
 
   /* ================= Report ================= */
@@ -1003,11 +1026,9 @@
           const fr = await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${apiKey}`);
           if (!fr.ok) throw new Error('download failed (HTTP ' + fr.status + ')');
           const text = decodeBytes(await fr.arrayBuffer());
-          const parsed = parseLinkedInCSV(text);
-          const name = (parsed.meta.campaignName || f.name.replace(/\.[^.]+$/, '')).trim();
-          ingestCSVText(name, text);
+          const updated = ingestCSVText(f.name.replace(/\.[^.]+$/, ''), text);
           cfg.seen[f.id] = f.modifiedTime;
-          if (!imported.includes(name)) imported.push(name);
+          updated.forEach(n => { if (!imported.includes(n)) imported.push(n); });
         } catch (err) { failed.push(`${f.name} (${err.message})`); }
       }
       saveDrive(cfg);

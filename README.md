@@ -36,9 +36,11 @@ Your portal will be live at `https://<username>.github.io/damverse-portal/`.
 ## Google Drive sync (Fetch data button)
 
 The landing page's **⟳ Fetch data from Drive** button reads every CSV in a Drive folder and
-updates the matching campaigns automatically — the campaign name is read from inside each file,
-so you can either keep replacing one file or add separately named exports; both work, even mixed.
-Already-imported files (same modified time) are skipped.
+updates the matching campaigns automatically. Rows are split by the file's **Campaign Name
+column**, so a single account-level export covering several campaigns updates each one —
+you can replace one file, drop in separately named exports, or point an automation
+(e.g. Zapier delivering LinkedIn's scheduled report emails into the folder) at it; all work,
+even mixed. Already-imported files (same modified time) are skipped.
 
 One-time setup by the admin (~3 minutes) — after this, **visitors need zero setup**:
 
