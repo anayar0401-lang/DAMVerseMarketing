@@ -937,6 +937,13 @@
 
   const DRIVE_KEY = 'damverse_drive_v1';
   const DRIVE_DEFAULT_FOLDER = '1vCBU1cDadEoChmsnN9NtJ6g5f9xWm_D6';
+  /* ===== Deploy config =====
+     Paste your Google API key below and every visitor gets one-click fetch with no setup.
+     Only commit a key that is RESTRICTED in console.cloud.google.com to:
+       1) API restriction: Google Drive API only
+       2) Website restriction: your portal's URL (e.g. https://<user>.github.io/*)
+     A key restricted that way can only read link-shared files and only from this site. */
+  const DRIVE_DEFAULT_KEY = '';
   function driveCfg() {
     try { return Object.assign({ apiKey: '', folderId: DRIVE_DEFAULT_FOLDER, seen: {} }, JSON.parse(localStorage.getItem(DRIVE_KEY)) || {}); }
     catch (e) { return { apiKey: '', folderId: DRIVE_DEFAULT_FOLDER, seen: {} }; }
@@ -947,7 +954,9 @@
 
   function driveSetup() {
     const cfg = driveCfg();
-    const key = prompt('Google API key (create one free at console.cloud.google.com — see README for the 2-minute steps). Stored only in this browser:', cfg.apiKey || '');
+    const key = prompt(DRIVE_DEFAULT_KEY
+      ? 'Google API key override (leave blank to use the portal\'s built-in key):'
+      : 'Google API key (create one free at console.cloud.google.com — see README for the 2-minute steps). Stored only in this browser:', cfg.apiKey || '');
     if (key === null) return null;
     const folder = prompt('Drive folder ID (the part after /folders/ in the folder URL). Folder must be shared as "Anyone with the link — Viewer":', cfg.folderId || DRIVE_DEFAULT_FOLDER);
     if (folder === null) return null;
@@ -962,12 +971,17 @@
 
   async function fetchFromDrive() {
     let cfg = driveCfg();
-    if (!cfg.apiKey) { cfg = driveSetup(); if (!cfg || !cfg.apiKey) { driveStatus('Fetch needs a Google API key — click ⚙ Configure to add one (README has the steps).', 'bad'); return; } }
+    let apiKey = cfg.apiKey || DRIVE_DEFAULT_KEY;   // built-in deploy key means visitors need no setup
+    if (!apiKey) {
+      cfg = driveSetup();
+      apiKey = cfg && (cfg.apiKey || DRIVE_DEFAULT_KEY);
+      if (!apiKey) { driveStatus('Fetch needs a Google API key — click ⚙ Configure to add one (README has the steps).', 'bad'); return; }
+    }
 
     try {
       driveStatus('Checking Drive folder…', 'busy');
       const q = encodeURIComponent(`'${cfg.folderId}' in parents and trashed=false`);
-      const listURL = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,mimeType,modifiedTime)&pageSize=100&key=${cfg.apiKey}`;
+      const listURL = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,mimeType,modifiedTime)&pageSize=100&key=${apiKey}`;
       const res = await fetch(listURL);
       if (!res.ok) {
         const detail = res.status === 403 ? 'API key invalid/restricted, or Drive API not enabled on the key’s project.'
@@ -986,7 +1000,7 @@
       for (const f of fresh) {
         driveStatus(`Importing ${f.name}…`, 'busy');
         try {
-          const fr = await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${cfg.apiKey}`);
+          const fr = await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&key=${apiKey}`);
           if (!fr.ok) throw new Error('download failed (HTTP ' + fr.status + ')');
           const text = decodeBytes(await fr.arrayBuffer());
           const parsed = parseLinkedInCSV(text);

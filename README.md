@@ -40,20 +40,22 @@ updates the matching campaigns automatically — the campaign name is read from 
 so you can either keep replacing one file or add separately named exports; both work, even mixed.
 Already-imported files (same modified time) are skipped.
 
-One-time setup (~2 minutes):
+One-time setup by the admin (~3 minutes) — after this, **visitors need zero setup**:
 
 1. **Share the folder**: in Google Drive, right-click the folder → Share → "Anyone with the link — Viewer".
 2. **Create a free API key**: go to [console.cloud.google.com](https://console.cloud.google.com) →
    create a project (any name) → **APIs & Services → Library → Google Drive API → Enable** →
    **APIs & Services → Credentials → Create credentials → API key**.
-   Recommended: restrict the key to the Google Drive API, and add your GitHub Pages URL as an
-   allowed HTTP referrer.
-3. In the portal, click **⚙ Configure**, paste the API key, and confirm the folder ID
-   (pre-filled with the DAMVerse reports folder). The key is stored only in that browser's
-   localStorage — it is never written into this repo.
+3. **Restrict the key** (required before committing it):
+   - *API restrictions* → Restrict key → **Google Drive API** only
+   - *Website restrictions* → add your portal URL, e.g. `https://<username>.github.io/*`
+4. Paste the key into the `DRIVE_DEFAULT_KEY` constant near the top of the script in
+   `index.html` and push. Restricted this way, the key can only read link-shared files and
+   only from your portal's domain, so it is safe to publish (this is Google's intended
+   pattern for browser keys, same as embedded Maps keys).
 
-Each person viewing the portal (e.g. management) enters the key once in their own browser;
-after that, one click on Fetch pulls the latest numbers.
+Anyone viewing the portal then just clicks **⟳ Fetch data from Drive**. The **⚙ Configure**
+button remains as a per-browser override for the key or folder ID (stored in localStorage only).
 
 ## Alerts
 
